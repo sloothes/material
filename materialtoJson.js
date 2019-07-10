@@ -1,4 +1,4 @@
-//  materialtoJson.js (v1.5.1)
+//  materialtoJson.js (v1.5.3)
 
 //  MATERIAL TO JSON.
 //  Return a promise with the 
@@ -50,14 +50,6 @@
             if ( material[ name ] == undefined ) continue;         // important!
             if ( material[ name ] instanceof Function ) continue;  // important!
             if ( typeof(material[name]) === "function" ) continue; // important!
-
-        /*
-            debugMode && console.log({
-                key: name,
-                value: material[name],
-                "typeof": typeof(material[name]),
-            });
-        */
 
             switch( name ){
 
@@ -172,7 +164,6 @@
             if ( texture[ name ] == undefined ) continue;
             if ( texture[ name ] instanceof Function ) continue;
             if ( typeof(texture[name]) === "function" ) continue;
-
 
             switch (name){
 
@@ -356,7 +347,7 @@
     }
 
 
-//  TEXTURE FROM JSON (v1.5.1)
+//  TEXTURE FROM JSON (v1.5.3)
 //  Return a promise with the texture resolved.
 
     function texturefromJSON( json ){
@@ -365,15 +356,11 @@
 
         for ( var name in json ){
 
-
             switch (name){
 
-            //  sourceFile.
-
-                case "sourceFile":
-                    texture.sourceFile = json[ name ]; // important!
+                case "meta":
+                case "image":
                 break;
-
 
             //  array to vector2.
 
@@ -400,70 +387,126 @@
 
                 break;
 
-
-                case "image":
-
             //  image from texture json with"FileReader.readAsDataURL(blob)".
 
+                //  Check whether a match for the request is found in   
+                //  the CacheStorage using CacheStorage.match(). If so, serve that.
+
+                //  If not, open the "textures" cache using open(), 
+                //  put the default network request in the cache using Cache.put() 
+                //  and return a clone of the default network request using return response.clone().
+
+                //  Clone is needed because put() consumes the response body.
+                //  If this fails (e.g., because the network is down), return a fallback response.
+
+                //  Pros:
+
+                    //  Easy to use.
+                    //  Small, compact, safe code.
+                    //  Texture.image.src is string.
+                    //  Texture.image.src is dataURL.
+                    //  Texture.image.src can reused.
+                    //  Texture.image.src is always valid.
+                    //  Texture.image.src can be send everywhere.
+                    //  Texture.image.src can converted to canvas.
+                    //  Texture.image (canvas) size always power of 2.
+                    //  Texture.image.src can saved in storage objects.
+                    //  Texture.image.src can converted vice versa to blob.
+
+                //  Cons:
+
+                    //  Larger size (33%)
+
+        /*
+            //  sourceFile.
+                case "sourceFile":
+                    texture.sourceFile = json[ name ]; // important!
+                break;
+        */
+
+            //  case "image": (N/A).
+                case "sourceFile":
+
+                    texture.sourceFile = json.sourceFile;
+
                 //  SourceFile first.
-                    var url = json.sourceFile || json.image.src;
+                    var url = json.sourceFile || json.image.src || json.image || "https://i.imgur.com/ODeftia.jpg";
                 //  debugMode && console.log( url );
 
+                //  URL.
 
-                //  Cache first.
-                    caches.match( url ).then(function(response){
+                    if ( validator && validator.isURL( url ) ) {
 
-                        if ( !response ) 
-                            throw response;
-                        else
-                            return response;
+                    //  Cache first.
+                        caches.match( url ).then(function(response){
 
-                    }).catch(function(err){
+                            if ( !response ) 
+                                throw response;
+                            else
+                                return response;
 
-                    //  We use cors origin mode to avoid
-                    //  texture tainted canvases, images.
+                        }).catch(function(err){
 
-                        return fetch( url, {
-                            mode: "cors",               // important!
-                            method: "GET",
+                        //  We use cors origin mode to avoid
+                        //  texture tainted canvases, images.
+
+                            return fetch( url, {
+                                mode: "cors",  // important!
+                                method: "GET",
+                            });
+
+                        }).then(async function(response){
+
+                            var cache = await caches.open("textures")
+                            .then(function(cache){ return cache; });
+
+                        //  Clone is needed because put() consumes the response body.
+                        //  See: "https://developer.mozilla.org/en-US/docs/Web/API/Cache/put"
+
+                            var clone = response.clone();
+                            await cache.put( url, clone );
+
+                            return response.blob();         //  important!
+
+                        }).then(function(blob){
+
+                            var img = new Image();
+                            img.crossOrigin = "anonymous";  //  important!
+
+                            $(img).one("load", function(){
+                            //  texture.image = img;        //  or...
+                                var canvas = makePowerOfTwo( img, true );
+                                texture.image = canvas;
+                                if (canvas) $(img).remove(); // optional.
+                                texture.needsUpdate = true;
+                            });
+
+                        //  Get dataURL from blob.
+
+                            var reader = new FileReader();
+                            reader.onload = function() {
+                                img.src = reader.result;
+                            };
+
+                            reader.readAsDataURL(blob);
+
                         });
+                        
+                        break;
+                    } 
 
-                    }).then(async function(response){
+                //  DataURL.
 
-                        var cache = await caches.open("textures")
-                        .then(function(cache){ return cache; });
-
-                    //  Clone is needed because put() consumes the response body.
-                    //  See: "https://developer.mozilla.org/en-US/docs/Web/API/Cache/put"
-
-                        var clone = response.clone();
-                        await cache.put( url, clone );
-
-                        return response.blob();         //  important!
-
-                    }).then(function(blob){
-
+                    if ( validator && validator.isDataURI( url ) ) {
                         var img = new Image();
-                        img.crossOrigin = "anonymous";  //  important!
-
+                        img.crossOrigin = "anonymous";
                         $(img).one("load", function(){
-                        //  texture.image = img;        //  or...
                             var canvas = makePowerOfTwo( img, true );
                             texture.image = canvas;
-                            if (canvas) $(img).remove(); // optional.
+                            if (canvas) $(img).remove();
                             texture.needsUpdate = true;
-                        });
-
-                    //  Get dataURL from blob.
-
-                        var reader = new FileReader();
-                        reader.onload = function() {
-                            img.src = reader.result;
-                        };
-
-                        reader.readAsDataURL(blob);
-
-                    });
+                        }).attr({src: url});  break;
+                    } 
 
                 break;
 
@@ -543,7 +586,6 @@
 
     }
 
-
 //  blobToDataUrl.js
 //  https://gist.github.com/tantaman/6921973
 
@@ -611,6 +653,8 @@
 
         return canvas;
     }
+
+
 
 //  getDataURL.js
 
