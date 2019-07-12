@@ -53,6 +53,7 @@
 
             switch( name ){
 
+                case "meta":
                 case "defines":
                 case "program":
                 case "_listeners":
