@@ -53,7 +53,6 @@
 
             switch( name ){
 
-                case "meta":
                 case "defines":
                 case "program":
                 case "_listeners":
@@ -234,7 +233,7 @@
 
 
 
-//  materialfromJson.js (v1.5.1)
+//  materialfromJson.js (v1.5.3)
 
 //  MATERIAL FROM JSON.
 //  Return a promise with the material resolved.
@@ -278,6 +277,7 @@
             switch (name){
 
                 case "_id":
+                case "meta":
                 break;
 
 
