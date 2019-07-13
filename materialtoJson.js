@@ -62,18 +62,18 @@
                 break;
 
 
-            //  uuid.
+            //  name, _id, uuid.
+
+                case "name":
+                    json.name = material.name;
+                break;
+
+                case "_id":
+                    json._id = material._id || ObjectId();
+                break;
 
                 case "uuid":
                     json.uuid = material.uuid || THREE.Math.generateUUID();
-                break;
-
-
-            //  name && _id.
-
-                case "name":
-                    json._id = material[ name ];
-                    json[ name ] = material[ name ];
                 break;
 
 
