@@ -66,7 +66,7 @@ var APP = {
 				update: [],
 			};
 
-			var scriptWrapParams = "app,renderer,scene,camera,controls";
+			var scriptWrapParams = "player,renderer,scene,camera";
 			var scriptWrapResultObj = {};
 
 			for ( var eventKey in events ) {
