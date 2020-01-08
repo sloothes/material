@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+
+		<title>material</title>
+
+		<link rel="stylesheet" href="/css/bootstrap.min.css">
+		<link rel="stylesheet" href="/css/bootbox-dialoges.css">
+		<link rel="stylesheet" href="/css/joystick.css">
+		<link rel="stylesheet" href="/css/anywhere3d.css">
+		<link rel="stylesheet" href="/css/jquery.Jcrop.css">
+		<link rel="stylesheet" href="/photoswipe/dist/photoswipe.css">
+		<link rel="stylesheet" href="/photoswipe/dist/default-skin/default-skin.css">
+
+		<script src="js/socketcluster.js"></script>
+		<script src="js/sc-codec-min-bin.js"></script>
+
+	</head>
+
+	<body ontouchstart="" style="margin:0px;overflow:hidden;background-color:#000;background-size:cover;
+	background-position:center;background-repeat:no-repeat;background-image:url(https://i.imgur.com/9F0fO1h.jpg);">
+
+		<script src="/js/Objectid.js"></script>
+		<script src="/js/rawdeflate.js"></script>
+		<script src="/js/rawinflate.js"></script>
+		<script src="/js/jquery.min.js"></script>
+		<script src="/js/zangodb.min.js"></script>
+		<script src="/js/signals.min.js"></script>
+		<script src="/js/validator.min.js"></script>
+		<script src="/js/bootstrap.min.js"></script>
+
+		<script src="js/app.js"></script>
+
+		<script src="/three/three.js"></script>
+		<script src="/three/Animation.js"></script>
+		<script src="/three/AnimationHandler.js"></script>
+		<script src="/three/KeyFrameAnimation.js"></script>
+		<script src="/three/EditorControls.js"></script> 
+		<script src="/three/TransformControls.js"></script> 
+		<script src="/three/SubdivisionModifier.js"></script>
+		<script src="/three/UVsDebug.js"></script>
+		<script src="/three/shader.js"></script>
+		<script src="/three/system.min.js"></script>
+
+		<script src="/js/MW.js"></script>
+		<script src="/js/MWtps.js"></script>
+		<script src="/js/VirtualInput.js"></script>
+
+		<script>
+		//	Loading manager.
+
+			var manager = new THREE.LoadingManager();
+
+		//	Loader.
+
+			var loader = new THREE.XHRLoader( manager );
+			loader.load( "app.json", function ( text ) {
+
+				var json = JSON.parse( text );
+
+				player = new APP.Player(); // (global for debug!)
+
+				player.load( json );
+				player.setSize( window.innerWidth, window.innerHeight );
+				player.play();
+
+				document.body.appendChild( player.dom );
+
+			//	Resize.
+
+				window.addEventListener( "resize", function () {
+					player.setSize( window.innerWidth, window.innerHeight );
+				});
+
+				
+			}, function onProgress( e ){
+
+			//	var loaded = e.loaded / 1024; // (KB)
+
+			//	var completed = document.getElementById("completed");
+
+				if ( e.lengthComputable && e.total > 0 ) {
+
+					var total = e.total / Math.pow(1024, 2); // (MB)
+
+				//	console.log( loaded.toFixed(2), "KB of", total.toFixed(2), "MB loaded." );
+					
+					
+					if ( e.loaded < Math.pow(1024, 2) ) console.log( (e.loaded / Math.pow(1024, 1) ).toFixed(0), "KB of", total.toFixed(2), "MB loaded." );
+					if ( e.loaded > Math.pow(1024, 2) ) console.log( (e.loaded / Math.pow(1024, 2) ).toFixed(2), "MB of", total.toFixed(2), "MB loaded." );
+
+				//	var percent = (e.loaded / e.total) * 100;
+				//	completed.textContent = percent.toFixed(0) + "%";
+
+
+				} else {
+
+					if ( e.loaded < Math.pow(1024, 2) ) console.log( ( e.loaded / Math.pow(1024, 1) ).toFixed(0), "KB loaded." );
+					if ( e.loaded > Math.pow(1024, 2) ) console.log( ( e.loaded / Math.pow(1024, 2) ).toFixed(2), "MB loaded." );
+
+				//	var total = 56291835; // (in bytes)
+				//	var percent = (e.loaded / total) * 100;
+				//	completed.textContent = percent.toFixed(0) + "%";
+
+				}
+
+			}, function onError(err){
+
+				console.error(err);
+
+			//	var dialog = document.getElementById("loading-dialog");
+			//	dialog.style.display = "none"; dialog.remove();
+			//	setTimeout( dialogError );
+
+			});
+
+		//	Encode - Decode.
+
+			function encode( string ) {
+				return window.btoa( RawDeflate.deflate( string ) );
+			}
+
+			function decode( string ) {
+				return RawDeflate.inflate( window.atob( string ) );
+			}
+			
+		</script>
+
+	</body>
+</html>
