@@ -1,6 +1,7 @@
 
 *.obj
 geometries/*
+female/history/*
 female/geometries/*
 female/js/sc-codec-min-bin.js
 female/js/socketcluster.js
